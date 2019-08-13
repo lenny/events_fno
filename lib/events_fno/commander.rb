@@ -1,3 +1,6 @@
+require 'events_fno/support/events_committer'
+require 'events_fno/support/command_executor'
+
 module EventsFno
   class Commander
     attr_reader :event_factory, :command_factory, :transaction_svc, :aggregate_repository, :event_record_repository
