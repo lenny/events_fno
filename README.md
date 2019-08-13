@@ -21,7 +21,89 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+e.g. For ActiveRecord
+
+``` ruby
+class CommandsSvc
+  class Repository
+    def save!(record)
+      record.save!
+    end
+
+    def prepare_data(record)
+      record.data = JSON.parse(record.data.to_json)
+      record
+    end
+  end
+
+  class << self
+    def execute(aggregate, name:, data: {})
+      repository = Repository.new
+      EventsFno::Commander.new(event_factory: EventsFactory.new,
+                               command_factory: CommandFactory.new,
+                               transaction_svc: ActiveRecord::Base,
+                               aggregate_repository: repository,
+                               event_record_repository: repository)
+          .execute(aggregate, name: name, data: data)
+    end
+  end
+
+```
+
+e.g. Command/Event factory
+
+```ruby
+class CommandFactory
+  PAYLOAD_CLASSES = {
+      'orders/pending_payment_create' => Orders::PendingPaymentCreate,
+      'orders/log_external_event' => Orders::LogExternalEvent,
+      'orders/subscriptions_schedule' => Orders::SubscriptionsSchedule,
+  }
+
+  def new_command(name, data)
+    if (c = PAYLOAD_CLASSES[name])
+      c.new(data)
+    else
+      raise "no command class found for #{name}"
+    end
+  end
+end
+```
+
+e.g. Command base
+
+```ruby
+class BaseCommand
+  include TypedModel::ModelBase
+
+  def execute(order, _)
+    []
+  end
+
+  protected
+
+  def new_event(aggregate, name:, data:)
+    EventRecord.new(aggregate: aggregate,
+                    name: name,
+                    data: data,
+                    event_at: Time.zone.now,
+                    created_by: Logging::ActionLogging.current_user)
+  end
+end
+```
+
+e.g. Event base
+
+```ruby
+class BaseEvent
+  include TypedModel::ModelBase
+
+  def apply(event_record)
+    event_record.hydrated_data = self
+    event_record.aggregate.apply_event(event_record)
+  end
+end
+```
 
 ## Development
 
@@ -31,7 +113,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/events_fno.
+Bug reports and pull requests are welcome on GitHub at https://github.com/lenny/events_fno.
 
 ## License
 
