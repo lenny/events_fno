@@ -105,6 +105,20 @@ class BaseEvent
 end
 ```
 
+Optionally expose a nice high level API for clients
+
+e.g.
+
+```ruby
+class OrdersSvc
+  def create_pending_payments(order, invoice)
+    CommandsSvc.execute(order, name: 'orders/pending_payment_create',
+                        data: { order_number: order.order_number,
+                                amount: invoice.total.to_s })
+  end
+end
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
