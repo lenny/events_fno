@@ -3,6 +3,41 @@
 Ruby events from now on - A framework for 
 introducing event sourcing to an already established system
 
+Service level functionality is exposed via commands which act as
+well defined input objects (i.e. Command objects).
+
+Commands are executed against an aggregate and produce zero or more
+`EventRecords` which contain all relevant facts as plain data,
+not tailored to a particular persistence model (`CQRS`). 
+
+This framework ensures that the events are persisted atomically 
+with the changes to the write model. 
+
+
+The event record stream can be tapped as necessary in addition
+for other consumers and/or audit logs.
+
+This architecture simplifies development by leading develepers to
+focus things like:
+ 
+* what actions/commands are needed by the applications
+* what are the inputs required for those commands
+* what are the potential event scenarios from a command (e.g. success?, 
+  failure?) and what data s associated with each. 
+* Last, and least, how those events apply to our specific model. 
+
+Benefits:
+
+* No upfront design of a specific persistence model
+* A well defined architecture reducing time spent considering
+  where to put your code, what abstractions, interfaces, etc.. (i.e. models, services, etc..)
+* Minimal coupling and due to focus on inputs and scenarios instead 
+  of persistence model.
+* Baked in audit trail
+* Potential to consume events for other purposes like
+  different models (i.e. search indexes) or analytics,
+* etc..
+
 ## Installation
 
 Add this line to your application's Gemfile:
