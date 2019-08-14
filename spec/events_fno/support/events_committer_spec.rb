@@ -95,17 +95,6 @@ module EventsFno
         expect(event_factory).to receive(:new_event).with('some/event', { 'foo' => 'FOO' })
         subject.commit_events([e1])
       end
-      #
-      # it 'does no serde on record data for persisted records' do
-      #   e1 = new_event_record(new_aggregate)
-      #   e1.data = { amount: Money.new('10') }
-      #   expect(e1).to receive(:persisted?).and_return(true)
-      #   expect(events_factory).to receive(:new_event) do |_, data|
-      #     expect(data).to eq(amount: Money.new('10'))
-      #     double('Event').as_null_object
-      #   end
-      #   subject.commit_events([e1])
-      # end
     end
   end
 end
