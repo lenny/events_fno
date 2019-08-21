@@ -32,7 +32,12 @@ module EventsFno
       # considered introducing an `ApplyEvent` collaborator, but decided it wasn't worth it's weight
       def apply_event(event_record)
         data = event_record_repository.prepare_data(event_record).data
-        event_factory.new_event(event_record.name, data).apply(event_record)
+        event = event_factory.new_event(event_record.name, data)
+        if event.valid?
+          event.apply(event_record)
+        else
+          raise "invalid event #{event.name} event: #{event.inspect}"
+        end
       end
     end
   end

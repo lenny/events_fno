@@ -18,7 +18,7 @@ module EventsFno
       let(:event_factory) do
         MyEventFactory.new.tap do |f|
           allow(f).to receive(:new_event) do |name, data|
-            double('Event', apply: true)
+            double('Event', apply: true, valid?: true)
           end
         end
       end
@@ -86,14 +86,29 @@ module EventsFno
         subject.commit_events([e1])
       end
 
-      it 'uses prepared data for event payloads to avoid issues from events that would be invalid after going through serde' do
+      it 'applies events instantiated with prepared data to avoid issues from events that would be invalid after going through serde' do
         e1 = new_event_record(double('Aggregate'), name: 'some/event', data: { foo: 'FOO' })
         expect(event_record_repository).to receive(:prepare_data).with(e1) do
           e1.data = { 'foo' => 'FOO' }
           e1
         end
-        expect(event_factory).to receive(:new_event).with('some/event', { 'foo' => 'FOO' })
+        payload_object = double('Payload', valid?: true).as_null_object
+        expect(event_factory).to receive(:new_event).with('some/event', { 'foo' => 'FOO' }).and_return(payload_object)
+        expect(payload_object).to receive(:apply).with(e1)
         subject.commit_events([e1])
+      end
+
+      it 'raises error for events that are invalid after instatiation with "prepared" data' do
+        e1 = new_event_record(double('Aggregate'), name: 'some/event', data: { foo: 'FOO' })
+        expect(event_record_repository).to receive(:prepare_data).with(e1) do
+          e1.data = { 'foo' => 'FOO' }
+          e1
+        end
+        payload_object = double('Payload', valid?: false).as_null_object
+        expect(event_factory).to receive(:new_event).with('some/event', { 'foo' => 'FOO' }).and_return(payload_object)
+        expect {
+          subject.commit_events([e1])
+        }.to raise_error(/invalid/)
       end
     end
   end
