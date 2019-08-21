@@ -36,7 +36,7 @@ module EventsFno
         if event.valid?
           event.apply(event_record)
         else
-          raise "invalid event #{event.name} event: #{event.inspect}"
+          raise "invalid event #{event_record.name} event: #{event.inspect}"
         end
       end
     end
